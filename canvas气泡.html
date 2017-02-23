@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        html,body{
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<canvas></canvas>
+<body>
+<script>
+    window.onload=function(){
+
+        var canvas=document.getElementsByTagName('canvas')[0];
+        var ctx=canvas.getContext('2d');
+        //设置一个标记，用来管理定时器，因为每次只能开启一次定时器
+        var flag=true;
+        var colorArray=['red','orange','green','blue','purple'];
+        //这里创建一个圆的数组，用来存放小球对象；
+        var circleArray=[];
+        var timer=null;
+
+        canvas.width=window.innerWidth;
+        canvas.height=window.innerHeight;
+        canvas.style.backgroundColor='black';
+        //这里创建圆的函数
+        function drawCircle(circle){
+            ctx.beginPath();
+            //x轴位置，y轴位置，半径，起始弧度，结束弧度 弧度计算：角度*π/180
+            ctx.arc(circle.x,circle.y,circle.r,0,Math.PI*2);
+            ctx.fillStyle=circle.color;
+            ctx.globalCompositeOperation='lighter';
+            ctx.fill();
+        }
+        function random(max,min){
+            return Math.round(Math.random()*(max-min)+min)
+        }
+
+        canvas.onmousemove=function(ev){
+            evnet=ev;
+            for(var i=0; i<2; i++){
+                var circle={
+                    x:random(-5,5)+event.clientX,
+                    y:random(-5,5)+event.clientY,
+                    //color:colorArray[Math.random()*colorArray.length],
+                    color:colorArray[parseInt(Math.random()*colorArray.length)],
+                    r:random(20,80),
+                    //设置小球的X轴水平速度
+                    cx:Math.random()- 0.5,
+                    //设置小球的Y轴水平速度
+                    cy:Math.random()-0.5
+                };
+            }
+            circleArray.push(circle);
+            if(circleArray.length>300){
+                circleArray.shift()
+            }
+            //开启一次定时器，让鼠标停止的时候气泡自动运动，设置标记是为了只开启一次定时器
+            if(flag){
+                clearInterval(timer);
+                timer=setInterval(moveCircle,100);
+                flag=false;
+            }
+            moveCircle()
+        };
+        //这里让圆开始移动,让圆动起来其实就是不停的改变圆的位置
+        function moveCircle(){
+            //这里只是清除页面上的圆，但是每个圆的对象被保存到数组里;
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            for(var i=0; i<circleArray.length; i++){
+                circleArray[i].x=circleArray[i].x+circleArray[i].cx*8;
+                circleArray[i].y=circleArray[i].y+circleArray[i].cy*8;
+                circleArray[i].r=circleArray[i].r* 0.8;
+                //设置自定义属性，为了捕捉到r小于1的气泡
+                circleArray[i].index=i;
+                if(circleArray[i].r<1){
+                    circleArray.splice(circleArray[i].index,1);
+//这里必须设置continue,因为小于1的数组被删除了，就要跳出循环 不能当参数传递给drawCircle(circleArray[i])
+                    continue;
+                }
+                drawCircle(circleArray[i])
+            }
+
+            console.log(1);
+            //如果没有小球了，就让定时器停掉，恢复标记初始状态
+            if(circleArray.length==0){
+                clearInterval(timer);
+                flag=true;
+            }
+        }
+
+    };
+
+   // ctx.style.backgroundColor='pink';
+</script>
+</body>
+</html>
